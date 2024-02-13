@@ -1,9 +1,12 @@
 import 'package:chatychat/components/chat_bubble.dart';
+import 'package:chatychat/components/emoji_picker.dart';
 import 'package:chatychat/components/my_textfield.dart';
 import 'package:chatychat/services/auth/auth_service.dart';
 import 'package:chatychat/services/chat/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
@@ -30,6 +33,7 @@ class _ChatPageState extends State<ChatPage> {
   //for textfeild focus
   FocusNode myFocusNode = FocusNode();
 
+  bool emojiShowing = false;
   @override
   void initState() {
     super.initState();
@@ -159,49 +163,95 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   //build message input
-  Widget _buildUserInput() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50.0),
-      child: Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10),
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.emoji_emotions,
-                color: Colors.grey,
-                size: 25,
-              ),
-            ),
-          ),
-          //textfeild should take up most of the space
-          Expanded(
-            child: MyTextFeild(
-              hintText: "Type a message",
-              obscureText: false,
-              controller: _messageController,
-              focusNode: myFocusNode,
-            ),
-          ),
+//   Widget _buildUserInput() {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 50.0),
+//       child: Row(
+//         children: [
+//           Container(
+//             margin: const EdgeInsets.symmetric(horizontal: 10),
+//             child: IconButton(
+//               onPressed: () {},
+//               icon: const Icon(
+//                 Icons.emoji_emotions,
+//                 color: Colors.grey,
+//                 size: 25,
+//               ),
+//             ),
+//           ),
+//           //textfeild should take up most of the space
+//           Expanded(
+//             child: MyTextFeild(
+//               hintText: "Type a message",
+//               obscureText: false,
+//               controller: _messageController,
+//               focusNode: myFocusNode,
+//             ),
+//           ),
 
-          //sende button
-          Container(
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-            ),
-            margin: const EdgeInsets.only(right: 25),
-            child: IconButton(
-              onPressed: sendMessage,
-              icon: const Icon(
-                Icons.arrow_upward,
-                color: Colors.white,
+//           //sende button
+//           Container(
+//             decoration: const BoxDecoration(
+//               color: Colors.green,
+//               shape: BoxShape.circle,
+//             ),
+//             margin: const EdgeInsets.only(right: 25),
+//             child: IconButton(
+//               onPressed: sendMessage,
+//               icon: const Icon(
+//                 Icons.arrow_upward,
+//                 color: Colors.white,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+  Widget _buildUserInput() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (emojiShowing)
+          EmojisWidget(addEmojiToTextController: addEmojiToTextController),
+        TextField(
+          controller: _messageController,
+          decoration: InputDecoration(
+            prefixIcon: GestureDetector(
+              onTap: () async {
+                if (emojiShowing) {
+                  setState(
+                    () {
+                      emojiShowing = false;
+                    },
+                  );
+                  await Future.delayed(const Duration(milliseconds: 500)).then(
+                    (value) async {
+                      await SystemChannels.textInput
+                          .invokeMethod("TextInput.show");
+                    },
+                  );
+                } else {
+                  await SystemChannels.textInput.invokeMethod("TextInputhide");
+                  setState(() {
+                    emojiShowing = true;
+                  });
+                }
+                ;
+              },
+              child: Icon(
+                emojiShowing ? Icons.keyboard : Icons.emoji_emotions_rounded,
+                color: Colors.blue,
               ),
             ),
+            hintText: "Message",
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
+  addEmojiToTextController({required Emoji emoji}) {}
 }
