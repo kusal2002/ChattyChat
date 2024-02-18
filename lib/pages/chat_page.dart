@@ -69,7 +69,7 @@ class _ChatPageState extends State<ChatPage> {
   void scrollDown() {
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -161,7 +161,6 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
-
   //build message input
 //   Widget _buildUserInput() {
 //     return Padding(
@@ -218,6 +217,11 @@ class _ChatPageState extends State<ChatPage> {
           EmojisWidget(addEmojiToTextController: addEmojiToTextController),
         TextField(
           controller: _messageController,
+          onTap: () {
+            setState(() {
+              emojiShowing = false;
+            });
+          },
           decoration: InputDecoration(
             prefixIcon: GestureDetector(
               onTap: () async {
@@ -246,6 +250,25 @@ class _ChatPageState extends State<ChatPage> {
                 color: Colors.blue,
               ),
             ),
+            suffixIcon: GestureDetector(
+              onTap: () {
+                setState(() {
+                  emojiShowing = false;
+                });
+                sendMessage();
+              },
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                margin: const EdgeInsets.only(right: 5),
+                child: const Icon(
+                  Icons.arrow_upward,
+                  color: Colors.white,
+                ),
+              ),
+            ),
             hintText: "Message",
           ),
         ),
@@ -253,5 +276,12 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  addEmojiToTextController({required Emoji emoji}) {}
+  addEmojiToTextController({required Emoji emoji}) {
+    setState(() {
+      _messageController.text = _messageController.text + emoji.emoji;
+
+      _messageController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _messageController.text.length));
+    });
+  }
 }
