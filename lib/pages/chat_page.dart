@@ -217,6 +217,7 @@ class _ChatPageState extends State<ChatPage> {
           EmojisWidget(addEmojiToTextController: addEmojiToTextController),
         TextField(
           controller: _messageController,
+          focusNode: myFocusNode,
           onTap: () {
             setState(() {
               emojiShowing = false;
